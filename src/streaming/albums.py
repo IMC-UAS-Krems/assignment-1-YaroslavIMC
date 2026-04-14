@@ -8,6 +8,7 @@ Classes to implement:
 """
 
 class Album:
+    """Ordered collection of AlbumTrack objects"""
     def __init__(self, album_id: str, title: str, artist, release_year: int):
         self.album_id = album_id
         self.title = title

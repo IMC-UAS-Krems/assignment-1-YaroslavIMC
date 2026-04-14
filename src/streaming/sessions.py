@@ -8,6 +8,7 @@ Classes to implement:
 """
 
 class ListeningSession:
+    """Records a user listening to a track"""
     def __init__(self, session_id: str, user, track, timestamp, duration_listened_seconds: int):
         self.session_id = session_id
         self.user = user

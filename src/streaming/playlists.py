@@ -9,6 +9,7 @@ Classes to implement:
 """
 
 class Playlist:
+    """User-curated ordered collection of tracks"""
     def __init__(self, playlist_id: str, name: str, owner):
         self.playlist_id = playlist_id
         self.name = name
@@ -32,8 +33,8 @@ class Playlist:
             total += track.duration_seconds
         return total
 
-
 class CollaborativePlaylist(Playlist):
+    """Playlist with multiple contributors"""
     def __init__(self, playlist_id: str, name: str, owner):
         super().__init__(playlist_id, name, owner)
         self.contributors = [owner]

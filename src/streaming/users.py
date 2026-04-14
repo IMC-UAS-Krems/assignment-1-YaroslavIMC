@@ -14,6 +14,7 @@ Classes to implement:
 from datetime import date
 
 class User:
+    """Base class for all users"""
     def __init__(self, user_id: str, name: str, age: int):
         self.user_id = user_id
         self.name = name
@@ -38,18 +39,18 @@ class User:
             answer.add(session.track.track_id)
         return answer
 
-
 class FreeUser(User):
+    """Free tier user with limited features"""
     MAX_SKIPS_PER_HOUR = 6
 
-
 class PremiumUser(User):
+    """Paid subscriber with full access"""
     def __init__(self, user_id: str, name: str, age: int, subscription_start: date):
         super().__init__(user_id, name, age)
         self.subscription_start = subscription_start
 
-
 class FamilyAccountUser(PremiumUser):
+    """Premium user managing family account"""
     def __init__(self, user_id: str, name: str, age: int, subscription_start=None):
         if subscription_start is None:
             subscription_start = date.today()
@@ -64,8 +65,8 @@ class FamilyAccountUser(PremiumUser):
     def all_members(self):
         return [self] + self.sub_users
 
-
 class FamilyMember(User):
+    """User profile belonging to a family account"""
     def __init__(self, user_id: str, name: str, age: int, parent=None):
         super().__init__(user_id, name, age)
         self.parent = parent

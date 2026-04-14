@@ -8,6 +8,7 @@ Classes to implement:
 """
 
 class Artist:
+    """Music artist or content creator"""
     def __init__(self, artist_id: str, name: str, genre: str):
         self.artist_id = artist_id
         self.name = name
