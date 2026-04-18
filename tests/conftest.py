@@ -42,11 +42,11 @@ def platform() -> StreamingPlatform:
     # Artists
     # ------------------------------------------------------------------
     pixels  = Artist("a1", "Pixels",    genre="pop")
-    rocks = Artist("a2", "The Rocks",   genre="rock")
-    jazzers = Artist("a3", "Jazzers",   genre="jazz")
-    beats = Artist("a4", "Beat Makers", genre="electro")
+    rock = Artist("a2", "The Rocks",   genre="rock")
+    jazz = Artist("a3", "Jazzers",   genre="jazz")
+    classical = Artist("a4", "Beat Makers", genre="electro")
 
-    for artist in (pixels, rocks, jazzers, beats):
+    for artist in (pixels, rock, jazz, classical):
         platform.add_artist(artist)
 
     # ------------------------------------------------------------------
@@ -62,21 +62,22 @@ def platform() -> StreamingPlatform:
         pixels.add_track(track)
     platform.add_album(dd)
 
-    # ------------------------------------------------------------------
-    # Additional Tracks
-    # ------------------------------------------------------------------
-    t4 = SingleRelease("t4", "Super Rock Music", 150, "rock", rocks, release_date=date(2024, 1, 2))
-    t5 = SingleRelease("t5", "Amazing Jazz", 160, "jazz", jazzers, release_date=date(2024, 1, 3))
-    t6 = SingleRelease("t6", "A track for a bad day", 170, "electro", beats, release_date=date(2024, 1, 4))
-    pod = InterviewEpisode("p1", "Eminem Podcast", 1200, "podcast", host="Host A", guest="Guest A")
-    story = NarrativeEpisode("p2", "Will Smith Podcast", 900, "podcast", host="Host B", season=1, episode_number=1)
-    book = AudiobookTrack("b1", "How to code in python audiobook", 600, "audio", author="Author", narrator="Narrator")
 
-    for artist, track in ((rocks, t4), (jazzers, t5), (beats, t6)):
+    # ------------------------------------------------------------------
+    # Additional tracks
+    # ------------------------------------------------------------------
+    t4 = SingleRelease("t4", "Super rock music", 150, "rock", rock, release_date=date(2024, 1, 2))
+    t5 = SingleRelease("t5", "Amazing jazz", 160, "jazz", jazz, release_date=date(2024, 1, 3))
+    t6 = SingleRelease("t6", "A track for a bad day", 170, "classical", classical, release_date=date(2024, 1, 4))
+    podcast = InterviewEpisode("p1", "Eminem Podcast", 1200, "podcast", host="Eminem", guest="Will Smith")
+    narrative = NarrativeEpisode("p2", "Super interesting story", 900, "story", host="Tom Holland", season=1, episode_number=1)
+    book = AudiobookTrack("b1", "How to code in python audiobook", 600, "audiobook", author="Jeff Bezos", narrator="Bill Gates")
+
+    for artist, track in ((rock, t4), (jazz, t5), (classical, t6)):
         artist.add_track(track)
         platform.add_track(track)
 
-    for track in (pod, story, book):
+    for track in (podcast, narrative, book):
         platform.add_track(track)
 
     # ------------------------------------------------------------------
@@ -85,10 +86,13 @@ def platform() -> StreamingPlatform:
     alice = FreeUser("u1", "Alice",   age=30)
     bob   = PremiumUser("u2", "Bob",   age=25, subscription_start=date(2023, 1, 1))
     parent = FamilyAccountUser("u3", "Parent", age=40)
-    child = FamilyMember("u4", "Child", age=16, parent=parent)
-    parent.add_sub_user(child)
+    child1 = FamilyMember("u4", "Child", age=16, parent=parent)
+    child2 = FamilyMember("u5", "Child", age=13, parent=parent)
 
-    for user in (alice, bob, parent, child):
+    parent.add_sub_user(child1)
+    parent.add_sub_user(child2)
+
+    for user in (alice, bob, parent, child1, child2):
         platform.add_user(user)
 
     # ------------------------------------------------------------------
@@ -125,8 +129,8 @@ def platform() -> StreamingPlatform:
         ListeningSession("s5", bob, t2, RECENT + timedelta(minutes=5), 100),
         ListeningSession("s6", bob, t3, RECENT + timedelta(minutes=10), 195),
         ListeningSession("s7", parent, book, RECENT, 300),
-        ListeningSession("s8", child, t3, RECENT, 195),
-        ListeningSession("s9", child, story, RECENT + timedelta(minutes=15), 120),
+        ListeningSession("s8", child1, t3, RECENT, 195),
+        ListeningSession("s9", child2, narrative, RECENT + timedelta(minutes=15), 120),
         ListeningSession("s10", parent, t4, RECENT + timedelta(minutes=20), 150),
     ]
 

@@ -19,10 +19,10 @@ Run with:
 
 import pytest
 from datetime import datetime, timedelta
-
+from streaming.artists import Artist
 from streaming.platform import StreamingPlatform
-from streaming.users import FreeUser, PremiumUser, FamilyAccountUser, FamilyMember
-from streaming.playlists import CollaborativePlaylist
+from streaming.users import User, FreeUser, PremiumUser, FamilyAccountUser, FamilyMember
+from streaming.playlists import Playlist, CollaborativePlaylist
 from tests.conftest import FIXED_NOW, RECENT, OLD
 
 
@@ -188,8 +188,8 @@ class TestUnderageSubUserListening:
         assert result == 5.25
 
     def test_custom_threshold(self, platform: StreamingPlatform) -> None:
-        assert platform.total_listening_time_underage_sub_users_minutes(age_threshold=16) == 0.0
-        assert platform.total_listening_time_underage_sub_users_minutes(age_threshold=17) == 5.25
+        assert platform.total_listening_time_underage_sub_users_minutes(age_threshold=14) == 2.0
+        assert platform.total_listening_time_underage_sub_users_minutes(age_threshold=18) == 5.25
 
 
 # ===========================================================================
@@ -208,7 +208,6 @@ class TestTopArtistsByListeningTime:
 
     def test_returns_list_of_tuples(self, platform: StreamingPlatform) -> None:
         """Verify the method returns a list of (Artist, float) tuples."""
-        from streaming.artists import Artist
         result = platform.top_artists_by_listening_time(n=3)
         assert isinstance(result, list)
         for item in result:
@@ -359,7 +358,6 @@ class TestUsersWhoCompletedAlbums:
 
     def test_returns_list_of_tuples(self, platform: StreamingPlatform) -> None:
         """Verify the method returns a list of (User, list) tuples."""
-        from streaming.users import User
         result = platform.users_who_completed_albums()
         assert isinstance(result, list)
         for item in result:

@@ -9,16 +9,16 @@ Classes to implement:
 """
 
 from datetime import datetime, timedelta
-
-from streaming.tracks import Song
-from streaming.playlists import CollaborativePlaylist
-from streaming.users import PremiumUser, FamilyMember
-
-
+from streaming.tracks import Song, Track
+from streaming.playlists import CollaborativePlaylist, Playlist
+from streaming.users import PremiumUser, FamilyMember, User
+from streaming.artists import Artist
+from streaming.albums import Album
+from streaming.sessions import ListeningSession
 
 class StreamingPlatform:
     """Central platform orchestrating all entities"""
-    def __init__(self, name:str):
+    def __init__(self, name:str) -> None:
         self.name = name
         self.catalogue = {}
         self.users = {}
@@ -27,45 +27,57 @@ class StreamingPlatform:
         self.playlists = {}
         self.sessions = []
 
-    def add_track(self, track):
+    def add_track(self, track) -> None:
+        """Add a track to the platform"""
         self.catalogue[track.track_id] = track
 
-    def add_user(self, user):
+    def add_user(self, user) -> None:
+        """Add a user to the platform"""
         self.users[user.user_id] = user
 
-    def add_artist(self, artist):
+    def add_artist(self, artist) -> None:
+        """Add an artist to the platform"""
         self.artists[artist.artist_id] = artist
 
-    def add_album(self, album):
+    def add_album(self, album) -> None:
+        """Add an album to the platform"""
         self.albums[album.album_id] = album
 
-    def add_playlist(self, playlist):
+    def add_playlist(self, playlist) -> None:
+        """Add a playlist to the platform"""
         self.playlists[playlist.playlist_id] = playlist
 
-    def record_session(self, session):
+    def record_session(self, session) -> None:
+        """Record a session"""
         self.sessions.append(session)
         session.user.add_session(session)
 
-    def get_track(self, track_id):
+    def get_track(self, track_id) -> Track | None:
+        """Return a track from the platform"""
         return self.catalogue.get(track_id)
 
-    def get_user(self, user_id):
+    def get_user(self, user_id) -> User | None:
+        """Return a user from the platform"""
         return self.users.get(user_id)
 
-    def get_artist(self, artist_id):
+    def get_artist(self, artist_id) -> Artist | None:
+        """Return an artist from the platform"""
         return self.artists.get(artist_id)
 
-    def get_album(self, album_id):
+    def get_album(self, album_id) -> Album | None:
+        """Return an album from the platform"""
         return self.albums.get(album_id)
 
-    def all_users(self):
+    def all_users(self) -> list[User]:
+        """Return a list of all users"""
         return list(self.users.values())
 
-    def all_tracks(self):
+    def all_tracks(self) -> list[Track]:
+        """Return a list of all tracks"""
         return list(self.catalogue.values())
 
     def total_listening_time_minutes(self, start: datetime, end: datetime) -> float:
-        """Q1 Returns total listening time in minutes"""
+        """Returns total listening time in minutes"""
         total = 0.0
         for session in self.sessions:
             if start <= session.timestamp <= end:
@@ -75,25 +87,25 @@ class StreamingPlatform:
     def avg_unique_tracks_per_premium_user(self, days: int = 30) -> float:
         """Returns average number of unique tracks for premium users"""
         premium_users = []
+
         for user in self.users.values():
             if type(user) is PremiumUser:
                 premium_users.append(user)
-
         if len(premium_users) == 0:
             return 0.0
 
-        border = datetime.now() - timedelta(days=days)
+        now = datetime.now() - timedelta(days=days)
         total_unique = 0
         for user in premium_users:
             unique_track_ids = set()
             for session in user.sessions:
-                if session.timestamp >= border:
+                if session.timestamp >= now:
                     unique_track_ids.add(session.track.track_id)
             total_unique += len(unique_track_ids)
 
         return total_unique / len(premium_users)
 
-    def track_with_most_distinct_listeners(self):
+    def track_with_most_distinct_listeners(self) -> Track | None:
         """Returns track with most distinct listeners"""
         if len(self.sessions) == 0:
             return None
@@ -112,7 +124,7 @@ class StreamingPlatform:
 
         return best_track
 
-    def avg_session_duration_by_user_type(self):
+    def avg_session_duration_by_user_type(self) -> list[tuple[str, float]]:
         """Returns average session duration grouped by user type"""
         values = {}
 
@@ -133,33 +145,35 @@ class StreamingPlatform:
     def total_listening_time_underage_sub_users_minutes(self, age_threshold: int = 18) -> float:
         """Returns listening time of underage family members"""
         total = 0.0
+
         for session in self.sessions:
             if isinstance(session.user, FamilyMember):
                 if session.user.age < age_threshold:
                     total += session.duration_listened_seconds / 60.0
         return total
 
-    def top_artists_by_listening_time(self, n: int = 5):
+    def top_artists_by_listening_time(self, n: int = 5) -> list[tuple[Artist, float]]:
         """Returns top artists sorted by listening time"""
-        totals = {}
+        total = {}
 
         for session in self.sessions:
             if isinstance(session.track, Song):
                 artist = session.track.artist
-                if artist not in totals:
-                    totals[artist] = 0.0
-                totals[artist] += session.duration_listened_seconds / 60.0
+                if artist not in total:
+                    total[artist] = 0.0
+                total[artist] += session.duration_listened_seconds / 60.0
 
         result = []
-        for artist, minutes in totals.items():
+        for artist, minutes in total.items():
             result.append((artist, minutes))
 
         result.sort(key=lambda item: item[1], reverse=True)
         return result[:n]
 
-    def user_top_genre(self, user_id: str):
+    def user_top_genre(self, user_id: str) -> tuple[str, float] | None:
         """Returns most listened genre for a user"""
         user = self.get_user(user_id)
+
         if user is None:
             return None
         if len(user.sessions) == 0:
@@ -188,9 +202,9 @@ class StreamingPlatform:
         percent = best_seconds * 100.0 / total_seconds
         return (best_genre, percent)
 
-    def collaborative_playlists_with_many_artists(self, threshold: int = 3):
+    def collaborative_playlists_with_many_artists(self, threshold: int = 3) -> list[CollaborativePlaylist]:
         """Returns collaborative_playlist with many different artists"""
-        answer = []
+        coll_playlist = []
 
         for playlist in self.playlists.values():
             if isinstance(playlist, CollaborativePlaylist):
@@ -199,11 +213,11 @@ class StreamingPlatform:
                     if isinstance(track, Song):
                         artist_ids.add(track.artist.artist_id)
                 if len(artist_ids) > threshold:
-                    answer.append(playlist)
+                    coll_playlist.append(playlist)
 
-        return answer
+        return coll_playlist
 
-    def avg_tracks_per_playlist_type(self):
+    def avg_tracks_per_playlist_type(self) -> dict[str, float]:
         """Returns average number of tracks per playlist type"""
         playlist_counts = []
         collaborative_counts = []
@@ -227,9 +241,9 @@ class StreamingPlatform:
             "CollaborativePlaylist": float(collaborative_average),
         }
 
-    def users_who_completed_albums(self):
+    def users_who_completed_albums(self) -> list[tuple[User, list[str]]]:
         """Returns users who listened all tracks of an album"""
-        answer = []
+        user_playlist = []
 
         for user in self.users.values():
             listened_track_ids = set()
@@ -251,5 +265,5 @@ class StreamingPlatform:
                     completed_titles.append(album.title)
 
             if len(completed_titles) > 0:
-                answer.append((user, completed_titles))
-        return answer
+                user_playlist.append((user, completed_titles))
+        return user_playlist

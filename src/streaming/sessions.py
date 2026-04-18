@@ -9,12 +9,13 @@ Classes to implement:
 
 class ListeningSession:
     """Records a user listening to a track"""
-    def __init__(self, session_id: str, user, track, timestamp, duration_listened_seconds: int):
+    def __init__(self, session_id: str, user, track, timestamp, duration_listened_seconds: int) -> None:
         self.session_id = session_id
         self.user = user
         self.track = track
         self.timestamp = timestamp
         self.duration_listened_seconds = duration_listened_seconds
 
-    def duration_listened_minutes(self):
+    def duration_listened_minutes(self) -> float:
+        """Returns the duration of the listening session in minutes"""
         return self.duration_listened_seconds / 60.0
